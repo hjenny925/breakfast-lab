@@ -3,51 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>早餐實驗室 - 大地色點餐系統</title>
+    <title>早餐實驗室 - 點餐系統</title>
     <style>
-        /* --- 大地色系 CSS 設定 --- */
-        :root {
-            --bg-color: #f4f1ea;      /* 米色背景：溫潤舒適 */
-            --primary-brown: #6b4f3a; /* 木質感深棕：用於標題與重點 */
-            --accent-green: #8c9c75;  /* 森林綠：用於送出按鈕，感覺自然健康 */
-            --text-color: #3e2f24;    /* 深咖色文字：比純黑更柔和 */
-            --card-bg: #ffffff;
-        }
-
-        body { 
-            background-color: var(--bg-color); 
-            color: var(--text-color);
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            margin: 0; padding: 20px;
-        }
-
+        :root { --bg: #f4f1ea; --brown: #6b4f3a; --green: #8c9c75; --text: #3e2f24; --white: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: 0 auto; }
-
-        h1 { color: var(--primary-brown); text-align: center; border-bottom: 2px solid var(--primary-brown); padding-bottom: 10px; }
-        
-        .info-box { background: #efebe2; padding: 10px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--primary-brown); }
-
-        h3 { background: var(--primary-brown); color: white; padding: 8px 12px; border-radius: 4px; margin-top: 25px; }
-
-        .menu-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: var(--card-bg); padding: 12px; margin-bottom: 8px; 
-            border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .price { color: #a67c52; font-weight: bold; margin-left: auto; margin-right: 15px; }
-
-        input[type="number"] { 
-            width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center;
-        }
-
-        .btn-submit { 
-            width: 100%; height: 55px; background-color: var(--accent-green); color: white;
-            border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;
-            margin-top: 30px; transition: 0.3s;
-        }
-
-        .btn-submit:hover { background-color: #7a8a64; }
+        h1 { color: var(--brown); text-align: center; border-bottom: 2px solid var(--brown); padding-bottom: 10px; }
+        .table-selector { display: flex; justify-content: space-between; gap: 5px; margin: 15px 0; }
+        .table-btn { flex: 1; padding: 12px 0; border: none; border-radius: 8px; background: #d2c8bc; color: white; font-weight: bold; cursor: pointer; }
+        .table-btn.active { background: var(--brown); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        h3 { background: var(--brown); color: white; padding: 10px; border-radius: 5px; margin-top: 20px; }
+        .item { display: flex; justify-content: space-between; align-items: center; background: var(--white); padding: 15px; margin-bottom: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .price { color: #a67c52; font-weight: bold; flex-grow: 1; text-align: right; margin-right: 15px; }
+        input[type="number"] { width: 60px; height: 35px; border: 1px solid #ccc; border-radius: 5px; text-align: center; font-size: 16px; }
+        .submit-btn { width: 100%; padding: 18px; background: var(--green); color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 30px; }
+        .submit-btn:disabled { background: #ccc; }
     </style>
 </head>
 <body>
@@ -55,91 +25,92 @@
 <div class="container">
     <h1>🍳 早餐實驗室</h1>
     
-    <div class="info-box">
-        歡迎點餐！您的桌號是：<span id="table-display" style="font-size: 1.2em; font-weight: bold;">載入中...</span>
+    <p style="text-align:center; font-weight:bold;">請選擇桌號：</p>
+    <div class="table-selector">
+        <button class="table-btn" onclick="setTable(1)">1桌</button>
+        <button class="table-btn" onclick="setTable(2)">2桌</button>
+        <button class="table-btn" onclick="setTable(3)">3桌</button>
+        <button class="table-btn" onclick="setTable(4)">4桌</button>
+        <button class="table-btn" onclick="setTable(5)">5桌</button>
     </div>
 
     <form id="orderForm">
         <h3>🥚 蛋餅系列</h3>
-        <div class="menu-item">原味蛋餅 <span class="price">$30</span> <input type="number" id="q1" value="0" min="0"></div>
-        <div class="menu-item">起司蛋餅 <span class="price">$40</span> <input type="number" id="q2" value="0" min="0"></div>
-        <div class="menu-item">培根蛋餅 <span class="price">$45</span> <input type="number" id="q3" value="0" min="0"></div>
-        <div class="menu-item">薯餅蛋餅 <span class="price">$50</span> <input type="number" id="q4" value="0" min="0"></div>
+        <div class="item"><span>原味蛋餅</span><span class="price">$30</span><input type="number" id="q1" value="0" min="0"></div>
+        <div class="item"><span>起司蛋餅</span><span class="price">$40</span><input type="number" id="q2" value="0" min="0"></div>
+        <div class="item"><span>培根蛋餅</span><span class="price">$45</span><input type="number" id="q3" value="0" min="0"></div>
+        <div class="item"><span>薯餅蛋餅</span><span class="price">$50</span><input type="number" id="q4" value="0" min="0"></div>
 
         <h3>🍔 漢堡 / 三明治</h3>
-        <div class="menu-item">火腿三明治 <span class="price">$40</span> <input type="number" id="q5" value="0" min="0"></div>
-        <div class="menu-item">鮪魚三明治 <span class="price">$50</span> <input type="number" id="q6" value="0" min="0"></div>
-        <div class="menu-item">咔啦雞腿堡 <span class="price">$70</span> <input type="number" id="q7" value="0" min="0"></div>
-        <div class="menu-item">厚牛起司堡 <span class="price">$85</span> <input type="number" id="q8" value="0" min="0"></div>
+        <div class="item"><span>火腿三明治</span><span class="price">$40</span><input type="number" id="q5" value="0" min="0"></div>
+        <div class="item"><span>鮪魚三明治</span><span class="price">$50</span><input type="number" id="q6" value="0" min="0"></div>
+        <div class="item"><span>咔啦雞腿堡</span><span class="price">$70</span><input type="number" id="q7" value="0" min="0"></div>
+        <div class="item"><span>厚牛起司堡</span><span class="price">$85</span><input type="number" id="q8" value="0" min="0"></div>
 
         <h3>🍟 點心</h3>
-        <div class="menu-item">蘿蔔糕 <span class="price">$35</span> <input type="number" id="q9" value="0" min="0"></div>
-        <div class="menu-item">炸雞塊 <span class="price">$45</span> <input type="number" id="q10" value="0" min="0"></div>
-        <div class="menu-item">薯條 <span class="price">$40</span> <input type="number" id="q11" value="0" min="0"></div>
+        <div class="item"><span>蘿蔔糕</span><span class="price">$35</span><input type="number" id="q9" value="0" min="0"></div>
+        <div class="item"><span>炸雞塊</span><span class="price">$45</span><input type="number" id="q10" value="0" min="0"></div>
+        <div class="item"><span>薯條</span><span class="price">$40</span><input type="number" id="q11" value="0" min="0"></div>
 
         <h3>🥤 飲料</h3>
-        <div class="menu-item">奶茶 <span class="price">$25</span> <input type="number" id="q12" value="0" min="0"></div>
-        <div class="menu-item">紅茶 <span class="price">$20</span> <input type="number" id="q13" value="0" min="0"></div>
-        <div class="menu-item">豆漿 <span class="price">$30</span> <input type="number" id="q14" value="0" min="0"></div>
-        <div class="menu-item">美式咖啡 <span class="price">$50</span> <input type="number" id="q15" value="0" min="0"></div>
+        <div class="item"><span>奶茶</span><span class="price">$25</span><input type="number" id="q12" value="0" min="0"></div>
+        <div class="item"><span>紅茶</span><span class="price">$20</span><input type="number" id="q13" value="0" min="0"></div>
+        <div class="item"><span>豆漿</span><span class="price">$30</span><input type="number" id="q14" value="0" min="0"></div>
+        <div class="item"><span>美式咖啡</span><span class="price">$50</span><input type="number" id="q15" value="0" min="0"></div>
 
-        <button type="button" class="btn-submit" onclick="submitOrder()">確認送出訂單</button>
+        <button type="button" class="submit-btn" id="submitBtn" onclick="sendOrder()">確認送出訂單</button>
     </form>
 </div>
 
 <script>
-    // 1. 抓取網址中的桌號參數 (?table=3)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tableNo = urlParams.get('table') || "外帶/未指定";
-    document.getElementById('table-display').innerText = tableNo;
+    let currentTable = null;
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxc78M8IQ2BLYXevhjvxONR6aPxHUXnDQITILY9lwWsCx5pBMRiubURxbNKBDFWVW4/exec'; // <--- 這裡一定要換成新的網址！
 
-    // 2. 送出訂單到 GAS
-    function submitOrder() {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxqshk7Q_LIyP63VVyMd7EJ0eYCen4fB7_4NCqITbfj0gAQwYROt-_BUFhOIwHqf3T1/exec'
-        
-        // 抓取各項數量
-        const quantities = [];
-        for(let i=1; i<=15; i++){
-            quantities.push(parseInt(document.getElementById('q' + i).value) || 0);
-        }
+    // 自動抓取網址桌號
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('table')) setTable(parseInt(params.get('table')));
 
-        // 計算總金額
+    function setTable(num) {
+        currentTable = num;
+        document.querySelectorAll('.table-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === num - 1);
+        });
+    }
+
+    function sendOrder() {
+        if (!currentTable) { alert("請先選擇桌號！"); return; }
+
         const prices = [30, 40, 45, 50, 40, 50, 70, 85, 35, 45, 40, 25, 20, 30, 50];
         let total = 0;
-        quantities.forEach((q, index) => {
-            total += q * prices[index];
-        });
+        let orderData = { table: currentTable };
 
-        if(total === 0) { alert("請至少選擇一項餐點！"); return; }
+        for (let i = 1; i <= 15; i++) {
+            let count = parseInt(document.getElementById('q' + i).value) || 0;
+            orderData['item' + i] = count;
+            total += count * prices[i-1];
+        }
 
-        const data = {
-            table: tableNo,
-            total: total
-        };
-        // 把 15 個數量動態塞進 data
-        quantities.forEach((q, index) => {
-            data['item' + (index + 1)] = q;
-        });
+        if (total === 0) { alert("請至少點一項餐點！"); return; }
+        orderData.total = total;
 
-        // 顯示傳送中 (避免重複點擊)
-        document.querySelector('.btn-submit').innerText = "傳送中...";
-        document.querySelector('.btn-submit').disabled = true;
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "傳送中...";
 
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify(data)
+            body: JSON.stringify(orderData)
         }).then(() => {
-            alert("訂單已送出！美味製作中 🍳");
+            alert("訂單已送出！請稍候餐點。");
             document.getElementById('orderForm').reset();
-            document.querySelector('.btn-submit').innerText = "確認送出訂單";
-            document.querySelector('.btn-submit').disabled = false;
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
         }).catch(err => {
-            alert("傳送出錯，請洽櫃檯！");
-            console.error(err);
+            alert("送出失敗，請檢查網路！");
+            btn.disabled = false;
         });
     }
 </script>
-
 </body>
 </html>
