@@ -9,15 +9,34 @@
         body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: 0 auto; }
         h1 { color: var(--brown); text-align: center; border-bottom: 2px solid var(--brown); padding-bottom: 10px; }
-        .table-selector { display: flex; justify-content: space-between; gap: 5px; margin: 15px 0; }
-        .table-btn { flex: 1; padding: 12px 0; border: none; border-radius: 8px; background: #d2c8bc; color: white; font-weight: bold; cursor: pointer; }
+        
+        /* 桌號按鈕區域：改為兩排排列以容納外帶選項 */
+        .table-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .table-btn { padding: 12px 0; border: none; border-radius: 8px; background: #d2c8bc; color: white; font-weight: bold; cursor: pointer; }
         .table-btn.active { background: var(--brown); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
         h3 { background: var(--brown); color: white; padding: 10px; border-radius: 5px; margin-top: 20px; }
         .item { display: flex; justify-content: space-between; align-items: center; background: var(--white); padding: 15px; margin-bottom: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .price { color: #a67c52; font-weight: bold; flex-grow: 1; text-align: right; margin-right: 15px; }
         input[type="number"] { width: 60px; height: 35px; border: 1px solid #ccc; border-radius: 5px; text-align: center; font-size: 16px; }
         .submit-btn { width: 100%; padding: 18px; background: var(--green); color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 30px; }
-        .submit-btn:disabled { background: #ccc; }
+        
+        /* --- 明細彈窗樣式 --- */
+        #receipt-modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .receipt-content { 
+            background: var(--white); padding: 25px; border-radius: 15px; width: 85%; max-width: 400px; 
+            max-height: 80vh; overflow-y: auto; border-top: 8px solid var(--brown);
+        }
+        .receipt-title { font-size: 22px; font-weight: bold; color: var(--brown); text-align: center; margin-bottom: 15px; }
+        .receipt-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; }
+        .receipt-total { font-size: 20px; font-weight: bold; text-align: right; margin-top: 15px; color: #d9534f; }
+        .close-btn { 
+            width: 100%; padding: 12px; background: var(--brown); color: white; border: none; 
+            border-radius: 8px; margin-top: 20px; cursor: pointer; font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -25,13 +44,14 @@
 <div class="container">
     <h1>🍳 早餐實驗室</h1>
     
-    <p style="text-align:center; font-weight:bold;">請選擇桌號：</p>
+    <p style="text-align:center; font-weight:bold;">請選擇桌號 / 外帶：</p>
     <div class="table-selector">
         <button class="table-btn" onclick="setTable(1)">1桌</button>
         <button class="table-btn" onclick="setTable(2)">2桌</button>
         <button class="table-btn" onclick="setTable(3)">3桌</button>
         <button class="table-btn" onclick="setTable(4)">4桌</button>
         <button class="table-btn" onclick="setTable(5)">5桌</button>
+        <button class="table-btn" onclick="setTable('外帶')">🛍️ 外帶</button>
     </div>
 
     <form id="orderForm">
@@ -62,32 +82,53 @@
     </form>
 </div>
 
+<div id="receipt-modal">
+    <div class="receipt-content">
+        <div class="receipt-title">📋 訂單已送出</div>
+        <p style="text-align: center;">桌號：<span id="res-table">-</span></p>
+        <div id="res-items"></div>
+        <div class="receipt-total">總金額：$<span id="res-total">0</span></div>
+        <button class="close-btn" onclick="closeModal()">好的，我知道了</button>
+    </div>
+</div>
+
 <script>
     let currentTable = null;
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxc78M8IQ2BLYXevhjvxONR6aPxHUXnDQITILY9lwWsCx5pBMRiubURxbNKBDFWVW4/exec'; // <--- 這裡一定要換成新的網址！
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxc78M8IQ2BLYXevhjvxONR6aPxHUXnDQITILY9lwWsCx5pBMRiubURxbNKBDFWVW4/exec'; // <--- 重要！
 
-    // 自動抓取網址桌號
     const params = new URLSearchParams(window.location.search);
-    if(params.get('table')) setTable(parseInt(params.get('table')));
+    const tableUrl = params.get('table');
+    if(tableUrl) setTable(tableUrl === '0' ? '外帶' : parseInt(tableUrl));
 
-    function setTable(num) {
-        currentTable = num;
-        document.querySelectorAll('.table-btn').forEach((btn, i) => {
-            btn.classList.toggle('active', i === num - 1);
+    function setTable(val) {
+        currentTable = val;
+        document.querySelectorAll('.table-btn').forEach((btn) => {
+            const btnText = btn.innerText;
+            if((val === '外帶' && btnText.includes('外帶')) || btnText === val + '桌') {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
         });
     }
 
     function sendOrder() {
-        if (!currentTable) { alert("請先選擇桌號！"); return; }
+        if (!currentTable) { alert("請先選擇桌號或外帶！"); return; }
 
+        const names = ["原味蛋餅","起司蛋餅","培根蛋餅","薯餅蛋餅","火腿三明治","鮪魚三明治","咔啦雞腿堡","厚牛起司堡","蘿蔔糕","炸雞塊","薯條","奶茶","紅茶","豆漿","美式咖啡"];
         const prices = [30, 40, 45, 50, 40, 50, 70, 85, 35, 45, 40, 25, 20, 30, 50];
+        
         let total = 0;
         let orderData = { table: currentTable };
+        let receiptHtml = "";
 
         for (let i = 1; i <= 15; i++) {
             let count = parseInt(document.getElementById('q' + i).value) || 0;
             orderData['item' + i] = count;
-            total += count * prices[i-1];
+            if(count > 0) {
+                total += count * prices[i-1];
+                receiptHtml += `<div class="receipt-row"><span>${names[i-1]} x ${count}</span><span>$${count * prices[i-1]}</span></div>`;
+            }
         }
 
         if (total === 0) { alert("請至少點一項餐點！"); return; }
@@ -102,7 +143,13 @@
             mode: 'no-cors',
             body: JSON.stringify(orderData)
         }).then(() => {
-            alert("訂單已送出！請稍候餐點。");
+            // 顯示明細彈窗
+            document.getElementById('res-table').innerText = currentTable;
+            document.getElementById('res-items').innerHTML = receiptHtml;
+            document.getElementById('res-total').innerText = total;
+            document.getElementById('receipt-modal').style.display = 'flex';
+            
+            // 重設表格
             document.getElementById('orderForm').reset();
             btn.disabled = false;
             btn.innerText = "確認送出訂單";
@@ -110,6 +157,10 @@
             alert("送出失敗，請檢查網路！");
             btn.disabled = false;
         });
+    }
+
+    function closeModal() {
+        document.getElementById('receipt-modal').style.display = 'none';
     }
 </script>
 </body>
